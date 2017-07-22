@@ -28,6 +28,9 @@ class SqliteConan(ConanFile):
         os.chdir("sqlite-amalgamation-3190300")
 
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+            if self.settings.build_type == "Debug":
+                raise Exception("Debug builds are not yet implemented.")
+
             defines = "/DSQLITE_ENABLE_COLUMN_METADATA /DSQLITE_ENABLE_RTREE /DSQLITE_ENABLE_FTS5"
 
             build_env = VisualStudioBuildEnvironment(self)
