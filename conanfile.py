@@ -5,12 +5,13 @@ import os
 class SqliteConan(ConanFile):
     name = "sqlite"
     version = "3.19.3"
-    license = "<Put the package license here>"
-    url = "<Package recipe repository url here, for issues about the package>"
+    license = "MIT"
+    url = "https://github.com/DarkMorford/conan-sqlite"
+    description = "SQLite is a self-contained, high-reliability, embedded, full-featured, public-domain, SQL database engine."
+
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
-    generators = "cmake"
+    options = {"shared": [True, False], "debug": [True, False]}
+    default_options = "shared=False", "debug=False"
 
     def configure(self):
         del self.settings.compiler.libcxx
