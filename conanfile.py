@@ -16,6 +16,10 @@ class SqliteConan(ConanFile):
     options = {"shared": [True, False]}
     default_options = "shared=False"
 
+    @property
+    def source_dir(self):
+        return ("sqlite-amalgamation-%s" % self.version_string)
+
     def configure(self):
         del self.settings.compiler.libcxx
 
@@ -26,7 +30,7 @@ class SqliteConan(ConanFile):
         os.remove("sqlite.zip")
 
     def build(self):
-        os.chdir("sqlite-amalgamation-3190300")
+        os.chdir(self.source_dir)
 
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             if self.settings.build_type == "Debug":
@@ -55,15 +59,15 @@ class SqliteConan(ConanFile):
 
     def package(self):
         # Always copy headers
-        self.copy("*.h", dst="include", src="sqlite-amalgamation-3190300")
+        self.copy("*.h", dst="include", src=self.source_dir)
 
         if self.settings.os == "Windows":
-            self.copy("sqlite3.exe", dst="bin", src="sqlite-amalgamation-3190300")
+            self.copy("sqlite3.exe", dst="bin", src=self.source_dir)
             if self.options.shared:
-                self.copy("sqlite3.lib", dst="lib", src="sqlite-amalgamation-3190300")
-                self.copy("sqlite3.dll", dst="bin", src="sqlite-amalgamation-3190300")
+                self.copy("sqlite3.lib", dst="lib", src=self.source_dir)
+                self.copy("sqlite3.dll", dst="bin", src=self.source_dir)
             else:
-                self.copy("sqlite3.lib", dst="lib", src="sqlite-amalgamation-3190300")
+                self.copy("sqlite3.lib", dst="lib", src=self.source_dir)
 
     def package_info(self):
         # Declare libraries that we generate
