@@ -31,22 +31,23 @@ class SqliteConan(ConanFile):
             if self.settings.build_type == "Debug":
                 raise Exception("Debug builds are not yet implemented.")
 
-            defines = "/DSQLITE_ENABLE_COLUMN_METADATA /DSQLITE_ENABLE_RTREE /DSQLITE_ENABLE_FTS5"
+            defines = ["/DSQLITE_ENABLE_COLUMN_METADATA", "/DSQLITE_ENABLE_RTREE", "/DSQLITE_ENABLE_FTS5"]
+            defines.append("/%s" % self.settings.compiler.runtime)
 
             build_env = VisualStudioBuildEnvironment(self)
             with tools.environment_append(build_env.vars):
                 vcvars = tools.vcvars_command(self.settings)
 
                 # Always build the command-line binary
-                self.run("%s && cl %s sqlite3.c shell.c -Fe:sqlite3.exe" % (vcvars, defines))
+                self.run("%s && cl %s sqlite3.c shell.c /Fe:sqlite3.exe" % (vcvars, " ".join(defines)))
 
                 if self.options.shared:
                     # Build shared library
-                    self.run("%s && cl /c %s sqlite3.c" % (vcvars, defines))
+                    self.run("%s && cl /c %s sqlite3.c" % (vcvars, " ".join(defines)))
                     self.run("%s && link /dll /def:../sqlite3.def sqlite3.obj" % vcvars)
                 else:
                     # Build static library
-                    self.run("%s && cl /c %s sqlite3.c" % (vcvars, defines))
+                    self.run("%s && cl /c %s sqlite3.c" % (vcvars, " ".join(defines)))
                     self.run("%s && lib sqlite3.obj" % vcvars)
         else:
             raise Exception("Only MSVC compiler currently implemented.")
