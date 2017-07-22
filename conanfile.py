@@ -9,6 +9,8 @@ class SqliteConan(ConanFile):
     url = "https://github.com/DarkMorford/conan-sqlite"
     description = "SQLite is a self-contained, high-reliability, embedded, full-featured, public-domain, SQL database engine."
 
+    exports = "sqlite3.def"
+
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
     default_options = "shared=False"
@@ -26,19 +28,22 @@ class SqliteConan(ConanFile):
         os.chdir("sqlite-amalgamation-3190300")
 
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+            defines = "/DSQLITE_ENABLE_COLUMN_METADATA /DSQLITE_ENABLE_RTREE /DSQLITE_ENABLE_FTS5"
+
             build_env = VisualStudioBuildEnvironment(self)
             with tools.environment_append(build_env.vars):
                 vcvars = tools.vcvars_command(self.settings)
 
                 # Always build the command-line binary
-                self.run("%s && cl sqlite3.c shell.c -Fe:sqlite3.exe" % vcvars)
+                self.run("%s && cl %s sqlite3.c shell.c -Fe:sqlite3.exe" % (vcvars, defines))
 
                 if self.options.shared:
                     # Build shared library
-                    pass
+                    self.run("%s && cl /c %s sqlite3.c" % (vcvars, defines))
+                    self.run("%s && link /dll /def:../sqlite3.def sqlite3.obj" % vcvars)
                 else:
                     # Build static library
-                    self.run("%s && cl /c sqlite3.c" % vcvars)
+                    self.run("%s && cl /c %s sqlite3.c" % (vcvars, defines))
                     self.run("%s && lib sqlite3.obj" % vcvars)
         else:
             raise Exception("Only MSVC compiler currently implemented.")
@@ -50,15 +55,10 @@ class SqliteConan(ConanFile):
         if self.settings.os == "Windows":
             self.copy("sqlite3.exe", dst="bin", src="sqlite-amalgamation-3190300")
             if self.options.shared:
-                pass
+                self.copy("sqlite3.lib", dst="lib", src="sqlite-amalgamation-3190300")
+                self.copy("sqlite3.dll", dst="bin", src="sqlite-amalgamation-3190300")
             else:
                 self.copy("sqlite3.lib", dst="lib", src="sqlite-amalgamation-3190300")
-
-#        self.copy("*hello.lib", dst="lib", keep_path=False)
-#        self.copy("*.dll", dst="bin", keep_path=False)
-#        self.copy("*.so", dst="lib", keep_path=False)
-#        self.copy("*.dylib", dst="lib", keep_path=False)
-#        self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
         # Declare libraries that we generate
