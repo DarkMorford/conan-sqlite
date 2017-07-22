@@ -1,4 +1,4 @@
-from conans import ConanFile, CMake, tools
+from conans import ConanFile, VisualStudioBuildEnvironment, tools
 import os
 
 
@@ -23,9 +23,14 @@ class SqliteConan(ConanFile):
         os.remove("sqlite.zip")
 
     def build(self):
-        cmake = CMake(self)
-        self.run('cmake hello %s' % cmake.command_line)
-        self.run("cmake --build . %s" % cmake.build_config)
+        os.chdir("sqlite-amalgamation-3190300")
+
+        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+            build_env = VisualStudioBuildEnvironment(self)
+            with tools.environment_append(build_env.vars):
+                pass
+        else:
+            raise Exception("Only MSVC compiler currently implemented.")
 
     def package(self):
         self.copy("*.h", dst="include", src="hello")
@@ -36,4 +41,8 @@ class SqliteConan(ConanFile):
         self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ["hello"]
+        # Declare libraries that we generate
+        self.cpp_info.libs = ["sqlite3"]
+
+        # Add path to binary utilities
+        self.env_info.path.append(os.path.join(self.package_folder, "bin"))
