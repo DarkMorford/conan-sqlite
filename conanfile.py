@@ -5,6 +5,7 @@ import os
 class SqliteConan(ConanFile):
     name = "sqlite"
     version = "3.19.3"
+    version_string = "3190300"
     license = "MIT"
     url = "https://github.com/DarkMorford/conan-sqlite"
     description = "SQLite is a self-contained, high-reliability, embedded, full-featured, public-domain, SQL database engine."
