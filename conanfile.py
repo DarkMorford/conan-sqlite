@@ -10,7 +10,7 @@ class SqliteConan(ConanFile):
     url = "https://github.com/DarkMorford/conan-sqlite"
     description = "SQLite is a self-contained, high-reliability, embedded, full-featured, public-domain, SQL database engine."
 
-    exports = "sqlite3.def"
+    exports = "CMakeLists.txt", "sqlite3.def"
 
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
