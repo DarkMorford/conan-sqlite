@@ -1,4 +1,5 @@
 from conans import ConanFile, CMake, tools
+import os
 
 
 class SqliteConan(ConanFile):
@@ -11,14 +12,14 @@ class SqliteConan(ConanFile):
     default_options = "shared=False"
     generators = "cmake"
 
+    def configure(self):
+        del self.settings.compiler.libcxx
+
     def source(self):
-        self.run("git clone https://github.com/memsharded/hello.git")
-        self.run("cd hello && git checkout static_shared")
-        # This small hack might be useful to guarantee proper /MT /MD linkage in MSVC
-        # if the packaged project doesn't have variables to set it properly
-        tools.replace_in_file("hello/CMakeLists.txt", "PROJECT(MyHello)", '''PROJECT(MyHello)
-include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()''')
+        tools.download("https://sqlite.org/2017/sqlite-amalgamation-3190300.zip", "sqlite.zip")
+        tools.check_sha1("sqlite.zip", "e013f08dc8dc138d7b169d09433dbcea94721441")
+        tools.unzip("sqlite.zip")
+        os.remove("sqlite.zip")
 
     def build(self):
         cmake = CMake(self)
@@ -35,6 +36,3 @@ conan_basic_setup()''')
 
     def package_info(self):
         self.cpp_info.libs = ["hello"]
-
-    def configure(self):
-        del self.settings.compiler.libcxx
