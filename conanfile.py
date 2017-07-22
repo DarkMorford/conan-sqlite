@@ -33,9 +33,6 @@ class SqliteConan(ConanFile):
         os.chdir(self.source_dir)
 
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
-            if self.settings.build_type == "Debug":
-                raise Exception("Debug builds are not yet implemented.")
-
             cflags = []
             cflags.append("/DSQLITE_ENABLE_COLUMN_METADATA")
             cflags.append("/DSQLITE_ENABLE_RTREE")
@@ -48,8 +45,14 @@ class SqliteConan(ConanFile):
             with tools.environment_append(build_env.vars):
                 vcvars = tools.vcvars_command(self.settings)
 
-                # Always build the command-line binary
+                # Always build the command-line binary without debug info
                 self.run("%s && cl %s sqlite3.c shell.c /Fe:sqlite3.exe" % (vcvars, " ".join(cflags)))
+
+                if self.settings.build_type == "Debug":
+                    cflags.append("/Zi")
+                    cflags.append("/Fd:sqlite3.pdb")
+                    if self.options.shared:
+                        ldflags.append("/debug")
 
                 if self.options.shared:
                     # Build shared library
@@ -68,6 +71,7 @@ class SqliteConan(ConanFile):
 
         if self.settings.os == "Windows":
             self.copy("sqlite3.exe", dst="bin", src=self.source_dir)
+            self.copy("sqlite3.pdb", dst="lib", src=self.source_dir)
             if self.options.shared:
                 self.copy("sqlite3.lib", dst="lib", src=self.source_dir)
                 self.copy("sqlite3.dll", dst="bin", src=self.source_dir)
