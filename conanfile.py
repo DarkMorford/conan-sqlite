@@ -44,13 +44,14 @@ class SqliteConan(ConanFile):
         self.copy("*.h", dst="include", src=self.source_dir)
 
         if self.settings.os == "Windows":
-            self.copy("sqlite3.exe", dst="bin", src="bin")
             self.copy("sqlite3.pdb", dst="lib", src="lib")
             if self.options.shared:
-                self.copy("sqlite3.lib", dst="lib", src="lib")
-                self.copy("sqlite3.dll", dst="bin", src="bin")
+                self.copy("*sqlite3.lib", dst="lib", src="lib")
+                self.copy("*sqlite3.dll", dst="bin", src="bin")
             else:
-                self.copy("sqlite3.lib", dst="lib", src="lib")
+                self.copy("*sqlite3.lib", dst="lib", src="lib")
+        else:
+            self.copy("*sqlite3.a", dst="lib", src="lib")
 
     def package_info(self):
         # Declare libraries that we generate
