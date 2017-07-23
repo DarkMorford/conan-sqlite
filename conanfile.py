@@ -46,10 +46,10 @@ class SqliteConan(ConanFile):
         if self.settings.os == "Windows":
             self.copy("sqlite3.pdb", dst="lib", src="lib")
             if self.options.shared:
-                self.copy("*sqlite3.lib", dst="lib", src="lib")
-                self.copy("*sqlite3.dll", dst="bin", src="bin")
+                self.copy("*sqlite3.lib", dst="lib", keep_path=False)
+                self.copy("*sqlite3.dll", dst="bin", keep_path=False)
             else:
-                self.copy("*sqlite3.lib", dst="lib", src="lib")
+                self.copy("*sqlite3.lib", dst="lib", keep_path=False)
         else:
             self.copy("*sqlite3.a", dst="lib", keep_path=False)
             self.copy("*sqlite3.so", dst="lib", keep_path=False)
@@ -60,7 +60,8 @@ class SqliteConan(ConanFile):
 
         # Declare libraries that consumers need
         if not self.settings.os == "Windows":
-            self.cpp_info.libs.append("dl", "pthread")
+            self.cpp_info.libs.append("dl")
+            self.cpp_info.libs.append("pthread")
 
         # Add path to binary utilities
         self.env_info.path.append(os.path.join(self.package_folder, "bin"))
