@@ -60,7 +60,7 @@ class SqliteConan(ConanFile):
 
         # Declare libraries that consumers need
         if not self.settings.os == "Windows":
-            self.cpp_info.exelinkflags = ["-ldl", "-lpthread"]
+            self.cpp_info.libs.append("dl", "pthread")
 
         # Add path to binary utilities
         self.env_info.path.append(os.path.join(self.package_folder, "bin"))
