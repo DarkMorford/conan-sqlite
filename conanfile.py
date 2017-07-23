@@ -1,5 +1,6 @@
-from conans import ConanFile, VisualStudioBuildEnvironment, tools
+from conans import ConanFile, CMake, tools
 import os
+import shutil
 
 
 class SqliteConan(ConanFile):
@@ -11,6 +12,7 @@ class SqliteConan(ConanFile):
     description = "SQLite is a self-contained, high-reliability, embedded, full-featured, public-domain, SQL database engine."
 
     exports = "CMakeLists.txt", "sqlite3.def"
+    generators = "cmake"
 
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
@@ -30,53 +32,25 @@ class SqliteConan(ConanFile):
         os.remove("sqlite.zip")
 
     def build(self):
-        os.chdir(self.source_dir)
+        # Move the CMakeLists file to the source directory
+        shutil.move("CMakeLists.txt", os.path.join(self.source_dir, "CMakeLists.txt"))
 
-        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
-            cflags = []
-            cflags.append("/DSQLITE_ENABLE_COLUMN_METADATA")
-            cflags.append("/DSQLITE_ENABLE_RTREE")
-            cflags.append("/DSQLITE_ENABLE_FTS5")
-            cflags.append("/%s" % self.settings.compiler.runtime)
-
-            ldflags = []
-
-            build_env = VisualStudioBuildEnvironment(self)
-            with tools.environment_append(build_env.vars):
-                vcvars = tools.vcvars_command(self.settings)
-
-                # Always build the command-line binary without debug info
-                self.run("%s && cl %s sqlite3.c shell.c /Fe:sqlite3.exe" % (vcvars, " ".join(cflags)))
-
-                if self.settings.build_type == "Debug":
-                    cflags.append("/Zi")
-                    cflags.append("/Fd:sqlite3.pdb")
-                    if self.options.shared:
-                        ldflags.append("/debug")
-
-                if self.options.shared:
-                    # Build shared library
-                    self.run("%s && cl /c %s sqlite3.c" % (vcvars, " ".join(cflags)))
-                    self.run("%s && link %s /dll /def:../sqlite3.def sqlite3.obj" % (vcvars, " ".join(ldflags)))
-                else:
-                    # Build static library
-                    self.run("%s && cl /c %s sqlite3.c" % (vcvars, " ".join(cflags)))
-                    self.run("%s && lib %s sqlite3.obj" % (vcvars, " ".join(ldflags)))
-        else:
-            raise Exception("Only MSVC compiler currently implemented.")
+        cmake_builder = CMake(self)
+        self.run('cmake "%s" %s' % (self.source_dir, cmake_builder.command_line))
+        self.run('cmake --build . %s' % cmake_builder.build_config)
 
     def package(self):
         # Always copy headers
         self.copy("*.h", dst="include", src=self.source_dir)
 
         if self.settings.os == "Windows":
-            self.copy("sqlite3.exe", dst="bin", src=self.source_dir)
-            self.copy("sqlite3.pdb", dst="lib", src=self.source_dir)
+            self.copy("sqlite3.exe", dst="bin", src="bin")
+            self.copy("sqlite3.pdb", dst="lib", src="lib")
             if self.options.shared:
-                self.copy("sqlite3.lib", dst="lib", src=self.source_dir)
-                self.copy("sqlite3.dll", dst="bin", src=self.source_dir)
+                self.copy("sqlite3.lib", dst="lib", src="lib")
+                self.copy("sqlite3.dll", dst="bin", src="bin")
             else:
-                self.copy("sqlite3.lib", dst="lib", src=self.source_dir)
+                self.copy("sqlite3.lib", dst="lib", src="lib")
 
     def package_info(self):
         # Declare libraries that we generate

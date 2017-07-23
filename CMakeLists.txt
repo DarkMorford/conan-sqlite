@@ -1,5 +1,19 @@
-PROJECT(SQLite)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+PROJECT(SQLITE C)
 
 INCLUDE(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
-conan_basic_setup()
+CONAN_BASIC_SETUP()
+
+SET(sqlite_SRCS sqlite3.c sqlite3.h sqlite3ext.h)
+
+ADD_DEFINITIONS(
+    -DSQLITE_ENABLE_FTS5
+    -DSQLITE_ENABLE_RTREE
+    -DSQLITE_ENABLE_COLUMN_METADATA
+)
+
+ADD_LIBRARY(sqlite3 ${sqlite_SRCS} ../sqlite3.def)
+
+ADD_EXECUTABLE(sqlite3-bin shell.c)
+TARGET_LINK_LIBRARIES(sqlite3-bin sqlite3)
+SET_TARGET_PROPERTIES(sqlite3-bin PROPERTIES OUTPUT_NAME sqlite3)
