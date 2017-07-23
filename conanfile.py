@@ -51,7 +51,8 @@ class SqliteConan(ConanFile):
             else:
                 self.copy("*sqlite3.lib", dst="lib", src="lib")
         else:
-            self.copy("*sqlite3.a", dst="lib", src="lib")
+            self.copy("*sqlite3.a", dst="lib", keep_path=False)
+            self.copy("*sqlite3.so", dst="lib", keep_path=False)
 
     def package_info(self):
         # Declare libraries that we generate
