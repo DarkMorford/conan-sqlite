@@ -17,6 +17,6 @@ ADD_DEFINITIONS(
 
 ADD_LIBRARY(sqlite3 ${sqlite_SRCS} ../sqlite3.def)
 
-ADD_EXECUTABLE(sqlite3-bin shell.c)
-TARGET_LINK_LIBRARIES(sqlite3-bin sqlite3)
-SET_TARGET_PROPERTIES(sqlite3-bin PROPERTIES OUTPUT_NAME sqlite3)
+#ADD_EXECUTABLE(sqlite3-bin shell.c)
+#TARGET_LINK_LIBRARIES(sqlite3-bin sqlite3)
+#SET_TARGET_PROPERTIES(sqlite3-bin PROPERTIES OUTPUT_NAME sqlite3)
