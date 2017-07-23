@@ -58,5 +58,9 @@ class SqliteConan(ConanFile):
         # Declare libraries that we generate
         self.cpp_info.libs = ["sqlite3"]
 
+        # Declare libraries that consumers need
+        if not self.settings.os == "Windows":
+            self.cpp_info.exelinkflags = ["dl", "pthread"]
+
         # Add path to binary utilities
         self.env_info.path.append(os.path.join(self.package_folder, "bin"))
