@@ -62,6 +62,3 @@ class SqliteConan(ConanFile):
         if not self.settings.os == "Windows":
             self.cpp_info.libs.append("dl")
             self.cpp_info.libs.append("pthread")
-
-        # Add path to binary utilities
-        self.env_info.path.append(os.path.join(self.package_folder, "bin"))
